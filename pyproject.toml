@@ -1,0 +1,26 @@
+[project]
+name = "mis-finanzas"
+version = "1.0.0"
+description = "Control de ingresos y gastos personales en Soles"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "flet==0.25.0",
+    "supabase>=2.9.0",
+    "python-dotenv>=1.0.1"
+]
+
+[tool.flet]
+product = "Mis Finanzas"
+org = "com.josue.misfinanzas"
+bundle_id = "com.josue.misfinanzas"
+copyright = "Copyright (C) 2026"
+
+[tool.flet.app]
+path = "src"
+module = "main"
+
+[tool.flet.android]
+split_per_abi = false
+legacy_packaging = false
+icon = "icon.png"

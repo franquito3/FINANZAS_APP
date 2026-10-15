@@ -1,0 +1,32 @@
+name: Compilar APK Android (Flet)
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  build-apk:
+    name: Generar APK de Mis Finanzas
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 1. Clonar Repositorio
+        uses: actions/checkout@v4
+
+      - name: 2. Compilar APK con Flet Build Action
+        id: build
+        uses: flet-dev/flet-build-action@v1
+        with:
+          target: apk
+          runner-python-version: "3.11"
+          bundled-python-version: "3.11"
+          build-number: ${{ github.run_number }}
+
+      - name: 3. Publicar APK para Descarga
+        uses: actions/upload-artifact@v4
+        with:
+          name: Mis-Finanzas-APK
+          path: ${{ steps.build.outputs.archive-path }}
+          if-no-files-found: error
