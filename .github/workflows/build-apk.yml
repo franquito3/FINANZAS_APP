@@ -9,24 +9,31 @@ on:
 jobs:
   build-apk:
     name: Generar APK de Mis Finanzas
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
 
     steps:
       - name: 1. Clonar Repositorio
         uses: actions/checkout@v4
 
-      - name: 2. Compilar APK con Flet Build Action
+      - name: 2. Configurar Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: 3. Compilar APK con Flet Build Action
         id: build
         uses: flet-dev/flet-build-action@v1
         with:
           target: apk
+          # Indicamos que use requirements.txt para asegurar que flet[all] y pip estén presentes
+          template-dir: "."
           runner-python-version: "3.11"
           bundled-python-version: "3.11"
           build-number: ${{ github.run_number }}
 
-      - name: 3. Publicar APK para Descarga
+      - name: 4. Publicar APK para Descarga
         uses: actions/upload-artifact@v4
         with:
-          name: Mis-Finanzas-APK
+          name: Mis Finanzas APK
           path: ${{ steps.build.outputs.archive-path }}
           if-no-files-found: error
