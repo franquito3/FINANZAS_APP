@@ -24,15 +24,4 @@ EXPENSE_CATEGORIES = {
 INCOME_CATEGORIES = {
     "Sueldo / Honorarios": {"icon": ft.Icons.ACCOUNT_BALANCE_WALLET, "color": ft.Colors.TEAL_400},
     "Negocio / Ventas": {"icon": ft.Icons.STOREFRONT, "color": ft.Colors.GREEN_ACCENT_700},
-    "Otros Ingresos": {"icon": ft.Icons.ADD_CARD, "color": ft.Colors.LIGHT_GREEN_400},
-}
-
-def delete_transaction_local(self, tx_id: str):
-        # 1. Eliminar de la caché visual
-        transactions = self.get_transactions()
-        transactions = [tx for tx in transactions if tx["id"] != tx_id]
-
-        # 2. Eliminar de la cola pendiente si aún no ha subido a Supabase
-        queue = self.get_pending_queue()
-        queue = [tx for tx in queue if tx["id"] != tx_id]
-        self.page.client_storage.set(self.PENDING_QUEUE_KEY, json.dumps(queue))
+}
