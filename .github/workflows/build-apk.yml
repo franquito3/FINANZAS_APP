@@ -20,11 +20,18 @@ jobs:
         with:
           python-version: "3.11"
 
-      - name: 3. Instalar Dependencias y CLI Coincidentes
+      - name: 3. Instalar dependencias (incluye Flet y flet-cli alineados)
         run: |
           python -m pip install --upgrade pip
+          # Forzar misma versión para flet con extras y su CLI (alineado a 0.25.0)
           python -m pip install "flet[all]==0.25.0" "flet-cli==0.25.0" --upgrade
+          # Instalar el resto de dependencias del proyecto
           python -m pip install -r requirements.txt
+          # Verificaciones de depuración en CI
+          echo "=== flet / flet-cli versions ==="
+          flet --version || true
+          python -m pip show flet flet-cli || true
+          python -m pip list | grep -E 'flet|flet-cli' || true
 
       - name: 4. Compilar APK Oficial con Flet CLI
         run: |
