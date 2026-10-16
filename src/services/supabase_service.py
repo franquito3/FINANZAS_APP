@@ -317,19 +317,21 @@ class SupabaseService:
 
     def start_google_login(self, on_login_success, is_mobile: bool = False) -> str | None:
         """Inicia el flujo OAuth con Google.
-        Levanta un servidor HTTP local en 127.0.0.1:8550 tanto en escritorio como en Android
-        (ya que Chrome en Android comparte localhost con el APK y http://localhost:8550 ya está
-        autorizado en Supabase), y al completar redirige de vuelta a la app."""
+        En móvil usa el deep link registrado en Android (misfinanzas://login-callback).
+        En escritorio usa el servidor local loopback (http://localhost:8550)."""
         if not self.is_configured:
             return None
         try:
             _, challenge = self._generate_pkce_pair()
-            # Iniciamos siempre el listener local en 127.0.0.1:8550
-            self._listen_for_oauth_callback(on_login_success, is_mobile=is_mobile)
+            redirect_to = MOBILE_DEEP_LINK_URL if is_mobile else DESKTOP_REDIRECT_URL
+
+            # En escritorio levantamos el listener local; en móvil el retorno llega vía deep link a la app
+            if not is_mobile:
+                self._listen_for_oauth_callback(on_login_success, is_mobile=False)
 
             params = urllib.parse.urlencode({
                 "provider": "google",
-                "redirect_to": DESKTOP_REDIRECT_URL,
+                "redirect_to": redirect_to,
                 "code_challenge": challenge,
                 "code_challenge_method": "s256",
             })

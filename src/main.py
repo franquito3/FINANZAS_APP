@@ -39,24 +39,31 @@ def main(page: ft.Page):
     dashboard = DashboardView(page, local_storage, supabase_service)
     page.add(ft.SafeArea(expand=True, content=dashboard.build()))
 
-    # Retorno del login de Google en móvil: misfinanzas://login-callback?code=... o ?status=ok
+    # Retorno del login de Google en móvil: misfinanzas://login-callback?code=...
     def handle_route(route: str | None):
+        import re
         raw = route or ""
         parsed = urlparse(raw)
         params = parse_qs(parsed.query)
         frag = parse_qs(parsed.fragment)
 
-        if "code" in params:
-            dashboard.handle_auth_callback(params["code"][0])
-        elif "access_token" in frag or "access_token" in params:
+        code = params.get("code", [None])[0] or frag.get("code", [None])[0]
+        if not code and "code=" in raw:
+            match = re.search(r"[?&#]code=([^&#]+)", raw)
+            if match:
+                code = match.group(1)
+
+        if code:
+            dashboard.handle_auth_callback(code)
+        elif "access_token" in frag or "access_token" in params or "access_token=" in raw:
             dashboard.handle_auth_callback(raw)
         elif "status" in params and params["status"][0] == "ok":
-            # El servidor loopback local (127.0.0.1:8550) ya procesó el login y nos redirigió de vuelta a la app
             dashboard.refresh_ui()
             if supabase_service.user_id:
                 page.run_thread(dashboard._background_sync, True)
-        elif "error_description" in params:
-            page.open(ft.SnackBar(content=ft.Text(params["error_description"][0])))
+        elif "error_description" in params or "error_description" in frag:
+            err = params.get("error_description", frag.get("error_description", ["Error en autenticación"]))[0]
+            page.open(ft.SnackBar(content=ft.Text(err), duration=3500))
 
     page.on_route_change = lambda e: handle_route(e.route)
     handle_route(page.route)  # por si la app se abrió desde el deep link
