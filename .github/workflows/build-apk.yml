@@ -35,9 +35,10 @@ jobs:
           flutter pub get
           dart run flutter_launcher_icons
 
-      - name: 5. Analizar Código Dart
+      - name: 5. Analizar Código Dart y Ejecutar Tests
         run: |
-          flutter analyze --no-fatal-infos
+          flutter analyze --no-fatal-infos --no-fatal-warnings
+          flutter test
 
       - name: 6. Compilar APK Release Nativo
         run: |
