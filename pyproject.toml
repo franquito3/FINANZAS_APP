@@ -5,7 +5,7 @@ description = "Control de ingresos y gastos personales en Soles"
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
-    "flet==0.25.0",
+    "flet==0.25.2",
     "supabase>=2.9.0",
     "python-dotenv>=1.0.1"
 ]
