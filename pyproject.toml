@@ -6,7 +6,7 @@ readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
     "flet==0.25.2",
-    "supabase>=2.9.0",
+    "certifi>=2024.2.2",
     "python-dotenv>=1.0.1"
 ]
 
@@ -24,3 +24,8 @@ module = "main"
 split_per_abi = false
 legacy_packaging = false
 icon = "icon.png"
+
+# Deep link para el retorno del login con Google: misfinanzas://login-callback?code=...
+[tool.flet.android.deep_linking]
+scheme = "misfinanzas"
+host = "login-callback"

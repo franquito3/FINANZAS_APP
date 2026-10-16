@@ -31,7 +31,16 @@ class LocalStorageService:
     def save_transactions(self, transactions: list[dict]):
         self.page.client_storage.set(self.TRANSACTIONS_KEY, json.dumps(transactions))
 
-    def add_transaction_local(self, tx_type: str, amount: float, category: str, note: str, user_id: str = "local_user") -> dict:
+    def add_transaction_local(
+        self,
+        tx_type: str,
+        amount: float,
+        category: str,
+        note: str,
+        user_id: str = "local_user",
+        created_at: str | None = None,
+    ) -> dict:
+        tx_date = created_at or datetime.now().isoformat()
         new_tx = {
             "id": str(uuid.uuid4()),
             "user_id": user_id,
@@ -39,11 +48,12 @@ class LocalStorageService:
             "amount": round(float(amount), 2),
             "category": category,
             "note": note,
-            "created_at": datetime.now().isoformat(),
+            "created_at": tx_date,
             "synced": False,
         }
         transactions = self.get_transactions()
         transactions.insert(0, new_tx)
+        transactions.sort(key=lambda x: str(x.get("created_at", "")), reverse=True)
         self.save_transactions(transactions)
 
         queue = [q for q in self.get_pending_queue() if q["id"] != new_tx["id"]]
@@ -51,7 +61,15 @@ class LocalStorageService:
         self.page.client_storage.set(self.PENDING_QUEUE_KEY, json.dumps(queue))
         return new_tx
 
-    def update_transaction_local(self, tx_id: str, tx_type: str, amount: float, category: str, note: str):
+    def update_transaction_local(
+        self,
+        tx_id: str,
+        tx_type: str,
+        amount: float,
+        category: str,
+        note: str,
+        created_at: str | None = None,
+    ):
         transactions = self.get_transactions()
         updated_tx = None
 
@@ -61,10 +79,13 @@ class LocalStorageService:
                 tx["amount"] = round(float(amount), 2)
                 tx["category"] = category
                 tx["note"] = note
+                if created_at:
+                    tx["created_at"] = created_at
                 tx["synced"] = False
                 updated_tx = tx
                 break
 
+        transactions.sort(key=lambda x: str(x.get("created_at", "")), reverse=True)
         self.save_transactions(transactions)
 
         if updated_tx:
