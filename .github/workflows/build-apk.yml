@@ -9,29 +9,52 @@ on:
 jobs:
   build-apk:
     name: Generar APK de Mis Finanzas
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
 
     steps:
       - name: 1. Clonar Repositorio
         uses: actions/checkout@v4
 
-      - name: 2. Configurar Python
+      - name: 2. Configurar Python 3.11
         uses: actions/setup-python@v5
         with:
           python-version: "3.11"
 
-      - name: 3. Compilar APK con Flet Build Action
-        id: build
-        uses: flet-dev/flet-build-action@v1
+      - name: 3. Configurar Java 17
+        uses: actions/setup-java@v5
         with:
-          target: apk
-          runner-python-version: "3.11"
-          bundled-python-version: "3.11"
-          build-number: ${{ github.run_number }}
+          distribution: "temurin"
+          java-version: "17"
 
-      - name: 4. Publicar APK para Descarga
+      - name: 4. Configurar Flutter 3.24
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: "3.24.0"
+          channel: "stable"
+          cache: true
+
+      - name: 4.5 Asegurar pip y python3-venv en el runner
+        # Evita errores como "/.venv/bin/python: No module named pip"
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y python3-venv python3-pip
+
+      - name: 5. Instalar dependencias (incluye Flet)
+        run: |
+          python -m pip install --upgrade pip
+          # Fijar/actualizar flet con extras necesarios para build
+          python -m pip install "flet[all]==0.25.2" --upgrade
+          # Instalar el resto (usar python -m pip para garantizar el intérprete correcto)
+          python -m pip install -r requirements.txt
+
+      - name: 6. Compilar APK con Flet CLI
+        run: |
+          # Ejecutar sin --yes (no existe) — si la tool solicita confirmación, usa printf/yes
+          flet build apk --verbose
+
+      - name: 7. Publicar APK para Descarga
         uses: actions/upload-artifact@v4
         with:
           name: Mis-Finanzas-APK
-          path: ${{ steps.build.outputs.archive-path }}
+          path: build/apk/
           if-no-files-found: error
