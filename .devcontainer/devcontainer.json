@@ -1,0 +1,14 @@
+{
+  "name": "Mis Finanzas - Flutter & Android SDK",
+  "image": "ghcr.io/cirruslabs/flutter:3.24.0",
+  "PostCreateCommand": "flutter create . --project-name mis_finanzas --org com.josue.misfinanzas --platforms android && python3 scripts/configure_android.py && flutter pub get && dart run flutter_launcher_icons",
+  "postCreateCommand": "flutter create . --project-name mis_finanzas --org com.josue.misfinanzas --platforms android && python3 scripts/configure_android.py && flutter pub get && dart run flutter_launcher_icons",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "Dart-Code.dart-code",
+        "Dart-Code.flutter"
+      ]
+    }
+  }
+}

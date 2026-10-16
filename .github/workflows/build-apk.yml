@@ -1,4 +1,4 @@
-name: Compilar APK Android (Flet)
+name: Compilar APK Android Nativo (Flutter)
 
 on:
   push:
@@ -8,62 +8,44 @@ on:
 
 jobs:
   build-apk:
-    name: Generar APK de Mis Finanzas
+    name: Generar APK Nativo de Mis Finanzas
     runs-on: ubuntu-22.04
 
     steps:
       - name: 1. Clonar Repositorio
         uses: actions/checkout@v4
 
-      - name: 2. Configurar Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.11"
-
-      - name: 3. Configurar Java 17
-        uses: actions/setup-java@v5
+      - name: 2. Configurar Java 17
+        uses: actions/setup-java@v4
         with:
           distribution: "temurin"
           java-version: "17"
 
-      - name: 4. Configurar Flutter 3.24
+      - name: 3. Configurar Flutter 3.24
         uses: subosito/flutter-action@v2
         with:
           flutter-version: "3.24.0"
           channel: "stable"
           cache: true
 
-      - name: 4.5 Asegurar pip y python3-venv en el runner
-        # Evita errores como "/.venv/bin/python: No module named pip"
+      - name: 4. Inicializar Plataforma Android y Deep Link OAuth
         run: |
-          sudo apt-get update
-          sudo apt-get install -y python3-venv python3-pip
+          flutter create . --project-name mis_finanzas --org com.josue.misfinanzas --platforms android
+          python3 scripts/configure_android.py
+          flutter pub get
+          dart run flutter_launcher_icons
 
-      - name: 5. Instalar dependencias (incluye Flet y flet-cli alineados)
+      - name: 5. Analizar Código Dart
         run: |
-          python -m pip install --upgrade pip
-          # Forzar misma versión para flet con extras y su CLI (0.25.2: corrige bug de
-          # 0.25.0 que empaquetaba la raíz del repo en vez de [tool.flet.app].path = "src")
-          python -m pip install "flet[all]==0.25.2" "flet-cli==0.25.2" --upgrade
-          # Instalar el resto de dependencias del proyecto
-          python -m pip install -r requirements.txt
-          # Verificaciones de depuración en CI
-          echo "=== flet / flet-cli versions ==="
-          flet --version || true
-          python -m pip show flet flet-cli || true
-          python -m pip list | grep -E 'flet|flet-cli' || true
-          # Comprobar archivos en repo que puedan colisionar con el paquete 'flet'
-          echo "=== posibles conflictos de nombres ==="
-          ls -la
-          grep -R --line-number "^import flet" . || true
+          flutter analyze --no-fatal-infos
 
-      - name: 6. Compilar APK Oficial con Flet CLI
+      - name: 6. Compilar APK Release Nativo
         run: |
-          flet build apk --verbose
+          flutter build apk --release
 
       - name: 7. Publicar APK para Descarga
         uses: actions/upload-artifact@v4
         with:
           name: Mis-Finanzas-APK
-          path: build/apk/
+          path: build/app/outputs/flutter-apk/app-release.apk
           if-no-files-found: error
